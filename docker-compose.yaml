@@ -44,7 +44,7 @@ services:
     ports:
       - 26379:26379
     volumes:
-      - ./redis/sentinel1.conf:/data/sentinel.conf
+      - ./sentinel1.conf:/data/sentinel.conf
     command: redis-server /data/sentinel.conf --sentinel
     depends_on:
       - redis
@@ -61,7 +61,7 @@ services:
     ports:
       - 26380:26380
     volumes:
-      - ./redis/sentinel2.conf:/data/sentinel.conf
+      - ./sentinel2.conf:/data/sentinel.conf
     command: redis-server /data/sentinel.conf --sentinel
     depends_on:
       - redis
@@ -78,7 +78,7 @@ services:
     ports:
       - 26381:26381
     volumes:
-      - ./redis/sentinel3.conf:/data/sentinel.conf
+      - ./sentinel3.conf:/data/sentinel.conf
     command: redis-server /data/sentinel.conf --sentinel
     depends_on:
       - redis
