@@ -1,0 +1,96 @@
+version: "3"
+services:
+#Master
+  redis:
+    image: redis
+    container_name: redis
+    command: redis-server --port 6379 --replica-announce-ip 192.168.32.2 --replica-announce-port  6379 
+    ports:
+      - 6379:6379
+    networks:
+      sail:
+        ipv4_address: 192.168.32.2
+    restart: unless-stopped
+#Replica 1
+  slave:
+    image: redis
+    container_name: redis-slave-1
+    ports:
+      - 6381:6381
+    command:  redis-server --port 6381 --replicaof 192.168.32.2 6379 --replica-announce-ip 192.168.32.3 --replica-announce-port  6381
+    depends_on:
+      - redis
+    networks:
+      sail:
+        ipv4_address: 192.168.32.3
+    restart: unless-stopped
+#Replica 2
+  slave-2:
+    image: redis
+    container_name: redis-slave-2
+    ports:
+      - 6382:6382
+    command: redis-server --port 6382 --replicaof 192.168.32.2 6379 --replica-announce-ip 192.168.32.4 --replica-announce-port  6382
+    depends_on:
+      - redis
+    networks:
+      sail:
+        ipv4_address: 192.168.32.4 
+    restart: unless-stopped
+#Sentinel 1
+  sentinel:
+    image: redis
+    container_name: redis-sentinel-1
+    ports:
+      - 26379:26379
+    volumes:
+      - ./redis/sentinel1.conf:/data/sentinel.conf
+    command: redis-server /data/sentinel.conf --sentinel
+    depends_on:
+      - redis
+      - slave
+      - slave-2
+    networks:
+      sail:
+        ipv4_address: 192.168.32.5
+    restart: unless-stopped
+#Sentinel 2
+  sentinel-2:
+    image: redis
+    container_name: redis-sentinel-2
+    ports:
+      - 26380:26380
+    volumes:
+      - ./redis/sentinel2.conf:/data/sentinel.conf
+    command: redis-server /data/sentinel.conf --sentinel
+    depends_on:
+      - redis
+      - slave
+      - slave-2
+    networks:
+      sail:
+        ipv4_address: 192.168.32.6  
+    restart: unless-stopped
+#Sentinel 3
+  sentinel-3:
+    image: redis
+    container_name: redis-sentinel-3
+    ports:
+      - 26381:26381
+    volumes:
+      - ./redis/sentinel3.conf:/data/sentinel.conf
+    command: redis-server /data/sentinel.conf --sentinel
+    depends_on:
+      - redis
+      - slave
+      - slave-2
+    networks:
+      sail:
+        ipv4_address: 192.168.32.7
+    restart: unless-stopped
+networks:
+  sail:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.32.0/16
